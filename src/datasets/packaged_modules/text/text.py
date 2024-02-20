@@ -122,6 +122,26 @@ class Text(datasets.ArrowBasedBuilder):
                     if batch:
                         pa_table = pa.Table.from_arrays([pa.array([batch])], names=pa_table_names)
                         yield (file_idx, batch_idx), self._cast_table(pa_table)
+                elif self.config.sample_by == "chunk":
+                    batch_idx = 0
+                    batch = ""
+                    while True:
+                        new_batch = f.read(self.config.chunksize)
+                        if not new_batch:
+                            break
+                        batch += new_batch
+                        batch += f.readline()  # finish current line
+                        pa_table = pa.Table.from_arrays([pa.array([batch])], names=pa_table_names)
+                        # Uncomment for debugging (will print the Arrow table size and elements)
+                        # logger.warning(f"pa_table: {pa_table} num rows: {pa_table.num_rows}")
+                        # logger.warning('\n'.join(str(pa_table.slice(i, 1).to_pydict()) for i in range(pa_table.num_rows)))
+                        yield (file_idx, batch_idx), self._cast_table(pa_table)
+                        batch_idx += 1
+                        batch = batch[-1]
+                    if batch:
+                        pa_table = pa.Table.from_arrays([pa.array([batch])], names=pa_table_names)
+                        yield (file_idx, batch_idx), self._cast_table(pa_table)
+
                 elif self.config.sample_by == "document":
                     text = f.read()
                     pa_table = pa.Table.from_arrays([pa.array([text])], names=pa_table_names)
