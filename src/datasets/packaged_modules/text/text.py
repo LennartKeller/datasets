@@ -25,6 +25,7 @@ class TextConfig(datasets.BuilderConfig):
     chunksize: int = 10 << 20  # 10MB
     keep_linebreaks: bool = False
     sample_by: str = "line"
+    size_limit: Optional[int] = None
 
     def __post_init__(self, errors):
         if errors != "deprecated":
@@ -125,6 +126,7 @@ class Text(datasets.ArrowBasedBuilder):
                 elif self.config.sample_by == "chunk":
                     batch_idx = 0
                     batch = ""
+                    total_size = 0
                     while True:
                         new_batch = f.read(self.config.chunksize)
                         if not new_batch:
@@ -136,6 +138,11 @@ class Text(datasets.ArrowBasedBuilder):
                         # logger.warning(f"pa_table: {pa_table} num rows: {pa_table.num_rows}")
                         # logger.warning('\n'.join(str(pa_table.slice(i, 1).to_pydict()) for i in range(pa_table.num_rows)))
                         yield (file_idx, batch_idx), self._cast_table(pa_table)
+                        total_size += len(new_batch.encode("utf-8"))
+                        print(total_size)
+                        if self.config.size_limit is not None and total_size >= self.config.size_limit:
+                            print("BREEEEAAK")
+                            break
                         batch_idx += 1
                         batch = batch[-1]
                     if batch:
