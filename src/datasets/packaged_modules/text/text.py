@@ -139,7 +139,6 @@ class Text(datasets.ArrowBasedBuilder):
                         # logger.warning('\n'.join(str(pa_table.slice(i, 1).to_pydict()) for i in range(pa_table.num_rows)))
                         yield (file_idx, batch_idx), self._cast_table(pa_table)
                         total_size += len(new_batch.encode("utf-8"))
-                        print(total_size)
                         if self.config.size_limit is not None and total_size >= self.config.size_limit:
                             break
                         batch_idx += 1
