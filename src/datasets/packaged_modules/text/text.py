@@ -141,7 +141,6 @@ class Text(datasets.ArrowBasedBuilder):
                         total_size += len(new_batch.encode("utf-8"))
                         print(total_size)
                         if self.config.size_limit is not None and total_size >= self.config.size_limit:
-                            print("BREEEEAAK")
                             break
                         batch_idx += 1
                         batch = batch[-1]
