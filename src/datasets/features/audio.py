@@ -66,6 +66,7 @@ class Audio:
     mono: bool = True
     decode: bool = True
     id: Optional[str] = None
+    audio_dtype: str = "float32"
     # Automatically constructed
     dtype: ClassVar[str] = "dict"
     pa_type: ClassVar[Any] = pa.struct({"bytes": pa.binary(), "path": pa.string()})
@@ -181,10 +182,10 @@ class Audio:
 
             download_config = DownloadConfig(token=token)
             with xopen(path, "rb", download_config=download_config) as f:
-                array, sampling_rate = sf.read(f)
+                array, sampling_rate = sf.read(f, dtype=self.audio_dtype)
 
         else:
-            array, sampling_rate = sf.read(file)
+            array, sampling_rate = sf.read(file, dtype=self.audio_dtype)
 
         array = array.T
         if self.mono:
